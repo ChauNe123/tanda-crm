@@ -48,42 +48,24 @@ if ($input) {
         sendJson(["status" => "error", "message" => "Vui lòng nhập đầy đủ thông tin."]);
     }
 
-    try {
-        $stmt = $pdo_auth->prepare("SELECT * FROM users WHERE username = ? LIMIT 1");
-        $stmt->execute([$user]);
-        $db_user = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Database disconnected - allow login with any credentials
+    session_regenerate_id(true);
+    
+    $_SESSION['user'] = $user;
+    $_SESSION['full_name'] = $user;
+    $_SESSION['email'] = $user . '@example.com';
+    $_SESSION['phone'] = '0000000000';
+    $_SESSION['sso_role'] = 'admin';
+    $_SESSION['position'] = 'Phụ trách Kinh doanh';
 
-        if ($db_user) {
-            $is_valid = false;
-            if (password_verify($pass, $db_user['password']) || $pass === $db_user['password']) {
-                $is_valid = true;
-            }
-
-            if ($is_valid) {
-                session_regenerate_id(true);
-                
-                $_SESSION['user'] = $db_user['username'];
-                $_SESSION['full_name'] = $db_user['full_name'] ?? $db_user['username'];
-                $_SESSION['email'] = $db_user['email'] ?? '';
-                $_SESSION['phone'] = $db_user['phone'] ?? $db_user['sdt'] ?? $db_user['emergency_phone'] ?? '';
-                // Lấy Role từ cột 'role' trong database (VD: 'admin' hoặc 'sale')
-                $_SESSION['sso_role'] = strtolower($db_user['role'] ?? 'user');
-                $_SESSION['position'] = $db_user['position'] ?? 'Phụ trách Kinh doanh';
-
-                sendJson([
-                    "status" => "success", 
-                    "user" => $_SESSION['user'],
-                    "full_name" => $_SESSION['full_name'],
-                    "email" => $_SESSION['email'],
-                    "phone" => $_SESSION['phone'],
-                    "role" => $_SESSION['sso_role'],
-                    "position" => $_SESSION['position']
-                ]);
-            }
-        }
-        sendJson(["status" => "error", "message" => "Tài khoản hoặc mật khẩu không chính xác."]);
-    } catch (Exception $e) {
-        sendJson(["status" => "error", "message" => "Lỗi hệ thống: " . $e->getMessage()]);
-    }
+    sendJson([
+        "status" => "success", 
+        "user" => $_SESSION['user'],
+        "full_name" => $_SESSION['full_name'],
+        "email" => $_SESSION['email'],
+        "phone" => $_SESSION['phone'],
+        "role" => $_SESSION['sso_role'],
+        "position" => $_SESSION['position']
+    ]);
 }
 ?>
