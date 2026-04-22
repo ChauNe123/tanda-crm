@@ -1,19 +1,27 @@
 <?php
-// Database connections removed - using stub for interface compatibility
-error_reporting(0);
-ini_set('display_errors', 0);
+// ==========================================
+// TANDA CRM - DATABASE CONNECTION
+// ==========================================
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Stub PDO class for interface compatibility
-class StubPDO {
-    public function query($sql) { return new StubPDOStatement(); }
-    public function prepare($sql) { return new StubPDOStatement(); }
-    public function exec($sql) { return 0; }
+$host = 'localhost';
+$db   = 'tanda_quotes_db'; // DB mới của bạn
+$user = 'root';            // Tài khoản MySQL của bạn
+$pass = '0705.KenBen';                // Mật khẩu MySQL của bạn
+
+$dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Lỗi kết nối CSDL TANDA: " . $e->getMessage()]);
+    exit;
 }
-
-class StubPDOStatement {
-    public function execute($params = []) { return true; }
-    public function fetch() { return null; }
-    public function fetchAll() { return []; }
-}
-
-$pdo = new StubPDO();
+?>

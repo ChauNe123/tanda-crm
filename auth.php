@@ -6,7 +6,7 @@ ini_set('session.cookie_httponly', 1);
 session_save_path($session_dir);
 session_start();
 
-require_once 'db_auth.php'; 
+require_once 'db.php'; // Chỉ gọi db.php
 
 function sendJson($data) {
     if (ob_get_length()) ob_clean();
@@ -22,11 +22,7 @@ if ($action === 'check') {
         sendJson([
             "status" => "logged_in", 
             "user" => $_SESSION['user'],
-            "full_name" => $_SESSION['full_name'] ?? '',
-            "email" => $_SESSION['email'] ?? '',
-            "phone" => $_SESSION['phone'] ?? '',
-            "role" => $_SESSION['sso_role'] ?? 'user',
-            "position" => $_SESSION['position'] ?? 'Phụ trách Kinh doanh'
+            "role" => $_SESSION['role']
         ]);
     } else {
         sendJson(["status" => "logged_out"]);
@@ -36,7 +32,7 @@ if ($action === 'check') {
 if ($action === 'logout') {
     $_SESSION = array();
     session_destroy();
-    sendJson(["status" => "success", "message" => "Đã đăng xuất"]);
+    sendJson(["status" => "success", "message" => "Đã đăng xuất khỏi TANDA CRM"]);
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -48,24 +44,23 @@ if ($input) {
         sendJson(["status" => "error", "message" => "Vui lòng nhập đầy đủ thông tin."]);
     }
 
-    // Database disconnected - allow login with any credentials
-    session_regenerate_id(true);
-    
-    $_SESSION['user'] = $user;
-    $_SESSION['full_name'] = $user;
-    $_SESSION['email'] = $user . '@example.com';
-    $_SESSION['phone'] = '0000000000';
-    $_SESSION['sso_role'] = 'admin';
-    $_SESSION['position'] = 'Phụ trách Kinh doanh';
+    // Check DB
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+    $stmt->execute([$user]);
+    $dbUser = $stmt->fetch();
 
-    sendJson([
-        "status" => "success", 
-        "user" => $_SESSION['user'],
-        "full_name" => $_SESSION['full_name'],
-        "email" => $_SESSION['email'],
-        "phone" => $_SESSION['phone'],
-        "role" => $_SESSION['sso_role'],
-        "position" => $_SESSION['position']
-    ]);
+    if ($dbUser && password_verify($pass, $dbUser['password'])) {
+        session_regenerate_id(true);
+        $_SESSION['user'] = $dbUser['username'];
+        $_SESSION['role'] = $dbUser['role'];
+
+        sendJson([
+            "status" => "success", 
+            "user" => $_SESSION['user'],
+            "role" => $_SESSION['role']
+        ]);
+    } else {
+        sendJson(["status" => "error", "message" => "Tài khoản hoặc mật khẩu không chính xác."]);
+    }
 }
 ?>
