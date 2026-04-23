@@ -37,4 +37,4 @@ function generateQuoteHTML(docData, products, formatMoney) {
             <table class="premium-signature"><tr><td><div class="role">ĐẠI DIỆN TANDA</div><div class="hint">Representative</div></td><td><div class="role">XÁC NHẬN TỪ KHÁCH HÀNG</div><div class="hint">Customer Approval</div></td></tr><tr><td style="height: 120px;"></td><td></td></tr></table>
         </div>
     `;
-}
+}                       

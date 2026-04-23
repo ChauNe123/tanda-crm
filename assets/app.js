@@ -289,7 +289,7 @@ async function loadInventory() {
 }
 
 function getInventorySearchHTML(index) {
-    return `<div class="mb-3 relative group"><input type="text" list="inventory-datalist" class="input-premium border-dashed border-red-300 bg-red-50 text-red-700 font-bold" placeholder="Gõ tìm sản phẩm từ kho..." onchange="applyFromSearch(this, ${index})" onclick="this.value=''"></div>`;
+    return;
 }
 
 function applyFromSearch(inputEl, index) {
