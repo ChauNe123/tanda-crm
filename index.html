@@ -8,7 +8,7 @@
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>KB | ENTERPRISE CRM</title>
+    <title>TANDA | Hệ thống Quản lý Báo Giá</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,13 +50,12 @@
         
         <div class="w-[520px] bg-white shadow-[8px_0_24px_rgba(15,23,42,0.04)] no-print flex flex-col shrink-0 border-r border-slate-200 z-10 h-full relative">
             <div class="bg-slate-900 p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
-                <a href="https://app.kbtech.vn" target="_self" class="flex items-center gap-3 group cursor-pointer hover:opacity-90 transition-opacity">
-                    <img src="logo.png" alt="KBTECH Logo" class="h-9 w-auto object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300">
+                <div class="flex items-center gap-3">
                     <div>
-                        <div class="text-white font-extrabold text-xl tracking-widest uppercase">PORTAL</div>
-                        <div class="text-[10px] text-slate-400 font-medium tracking-widest uppercase mt-0.5">Enterprise Document System</div>
+                        <div class="text-white font-extrabold text-2xl tracking-widest uppercase">TANDA</div>
+                        <div class="text-[10px] text-slate-400 font-medium tracking-widest uppercase mt-0.5">Hệ Thống Báo Giá</div>
                     </div>
-                </a>
+                </div>
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <span class="flex h-2.5 w-2.5 relative">
@@ -70,10 +69,7 @@
             </div>
 
             <div class="flex border-b border-slate-200 bg-slate-50/50 shrink-0">
-                <button onclick="switchTab('form-tab')" id="btn-form-tab" class="tab-btn active border-red-600 text-red-600 bg-red-50/50">Hồ sơ mới</button>
-                <button onclick="switchTab('history-tab'); loadHistoryFromDB()" id="btn-history-tab" class="tab-btn hover:text-red-600">Lịch sử Báo giá</button>
-                <button onclick="switchTab('order-tab'); loadOrderHistory()" id="btn-order-tab" class="tab-btn hover:text-red-600">Đơn Hàng</button>
-                <button onclick="switchTab('dashboard-tab'); loadDashboard()" id="btn-dashboard-tab" class="tab-btn hover:text-red-600">Thống Kê</button>
+                <button onclick="switchTab('form-tab')" id="btn-form-tab" class="tab-btn active border-red-600 text-red-600 bg-red-50/50 flex-1">Hồ sơ Báo Giá</button>
             </div>
 
             <div class="flex-1 flex flex-col min-h-0 bg-white">
@@ -163,40 +159,7 @@
                     </div>
                 </div>
 
-                <div id="history-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wide">Lịch sử máy chủ</h3>
-                        <button onclick="loadHistoryFromDB()" class="text-[11px] bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:border-slate-400 font-bold shadow-sm uppercase">🔄 Tải lại dữ liệu</button>
-                    </div>
-                    <div id="historyList" class="space-y-4"></div>
-                </div>
 
-                <div id="order-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wide">Quản lý Đơn hàng</h3>
-                        <button onclick="loadOrderHistory()" class="text-[11px] bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:border-slate-400 font-bold shadow-sm uppercase">🔄 Tải lại</button>
-                    </div>
-                    <div class="mb-6"><h4 class="text-[11px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Chờ Xử Lý / Duyệt</h4><div id="col-pending" class="space-y-3"></div></div>
-                    <div class="mb-6"><h4 class="text-[11px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Đã Xuất Kho / Đang giao</h4><div id="col-exported" class="space-y-3"></div></div>
-                    <div class="mb-6"><h4 class="text-[11px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Hoàn Tất</h4><div id="col-completed" class="space-y-3"></div></div>
-                </div>
-
-                <div id="dashboard-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wide">Thống kê tháng này</h3>
-                        <button onclick="loadDashboard()" class="text-[11px] bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:border-slate-400 font-bold shadow-sm uppercase">🔄 Cập nhật</button>
-                    </div>
-                    <div class="grid gap-4">
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-500">
-                            <div class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Doanh số Thực Tế</div>
-                            <div class="text-2xl font-black text-slate-800 mt-1" id="db-total-revenue">0 ₫</div>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
-                            <div class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Tổng số Đơn hàng</div>
-                            <div class="text-2xl font-black text-slate-800 mt-1" id="db-total-orders">0</div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div class="shrink-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-20">
