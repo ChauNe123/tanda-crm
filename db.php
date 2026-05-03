@@ -7,7 +7,7 @@ $db_config = [
     'host' => '127.0.0.1',
     'user' => 'root',        
     'pass' => '0705.KenBen', 
-    'name' => 'kb_quotes_db',
+    'name' => 'tanda_quotes_db',
     'port' => '3306' 
 ];
 
