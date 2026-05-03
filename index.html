@@ -8,7 +8,7 @@
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>TANDA | Hệ thống Quản lý Báo Giá</title>
+    <title>KB | ENTERPRISE CRM</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,32 +16,45 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/styles.css">
 
-    
     <style type="text/tailwindcss">
         .hidden { display: none !important; }
         .input-premium { @apply w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-[3px] focus:ring-red-500/20 focus:border-red-500 focus:bg-white block p-2.5 outline-none transition-all duration-200; }
         .label-premium { @apply block mb-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider; }
         .tab-btn { @apply flex-1 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest transition-all duration-300 border-b-2 border-transparent cursor-pointer hover:text-red-600; }
         .tab-btn.active { @apply border-red-600 text-red-600 bg-red-50/50; }
-    </style>            
+    </style>
 </head>
 
 <body class="bg-slate-100 h-screen flex overflow-hidden font-sans text-slate-800 selection:bg-red-200">
 
-    <!-- LOGIN OVERLAY REMOVED - NO LOGIN REQUIRED -->
-    <div id="loginOverlay" class="hidden"></div>
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center transition-opacity duration-500">
+        <div class="bg-white w-[400px] rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+            <div class="bg-slate-900 p-6 text-center border-b-4 border-red-600">
+                <div class="text-white font-extrabold text-2xl tracking-tight">KB<span class="text-red-500">TECH</span></div>
+                <div class="text-xs text-slate-400 font-medium tracking-widest uppercase mt-1">Hệ thống quản lý nội bộ</div>
+            </div>
+            <div class="p-8">
+                <div id="loginError" class="hidden bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 border border-red-200 text-center font-bold"></div>
+                <div class="space-y-4">
+                    <div><label class="label-premium">Tài khoản</label><input type="text" id="username" class="input-premium" placeholder="Nhập tài khoản..."></div>
+                    <div><label class="label-premium">Mật khẩu</label><input type="password" id="password" class="input-premium" placeholder="••••••••" onkeypress="if(event.key === 'Enter') login()"></div>
+                    <button onclick="login()" id="btnLogin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-2">ĐĂNG NHẬP</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    
-    <div id="appContainer" class="flex w-full h-full opacity-100 pointer-events-auto transition-opacity duration-500 delay-200">
+    <div id="appContainer" class="flex w-full h-full opacity-0 pointer-events-none transition-opacity duration-500 delay-200">
         
         <div class="w-[520px] bg-white shadow-[8px_0_24px_rgba(15,23,42,0.04)] no-print flex flex-col shrink-0 border-r border-slate-200 z-10 h-full relative">
             <div class="bg-slate-900 p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
-                <div class="flex items-center gap-3">
+                <a href="https://app.kbtech.vn" target="_self" class="flex items-center gap-3 group cursor-pointer hover:opacity-90 transition-opacity">
+                    <img src="logo.png" alt="KBTECH Logo" class="h-9 w-auto object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300">
                     <div>
-                        <div class="text-white font-extrabold text-2xl tracking-widest uppercase">TANDA</div>
-                        <div class="text-[10px] text-slate-400 font-medium tracking-widest uppercase mt-0.5">Hệ Thống Báo Giá</div>
+                        <div class="text-white font-extrabold text-xl tracking-widest uppercase">PORTAL</div>
+                        <div class="text-[10px] text-slate-400 font-medium tracking-widest uppercase mt-0.5">Enterprise Document System</div>
                     </div>
-                </div>
+                </a>
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <span class="flex h-2.5 w-2.5 relative">
@@ -55,7 +68,10 @@
             </div>
 
             <div class="flex border-b border-slate-200 bg-slate-50/50 shrink-0">
-                <button onclick="switchTab('form-tab')" id="btn-form-tab" class="tab-btn active border-red-600 text-red-600 bg-red-50/50 flex-1">Hồ sơ Báo Giá</button>
+                <button onclick="switchTab('form-tab')" id="btn-form-tab" class="tab-btn active border-red-600 text-red-600 bg-red-50/50">Hồ sơ mới</button>
+                <button onclick="switchTab('history-tab'); loadHistoryFromDB()" id="btn-history-tab" class="tab-btn hover:text-red-600">Lịch sử Báo giá</button>
+                <button onclick="switchTab('order-tab'); loadOrderHistory()" id="btn-order-tab" class="tab-btn hover:text-red-600">Đơn Hàng</button>
+                <button onclick="switchTab('dashboard-tab'); loadDashboard()" id="btn-dashboard-tab" class="tab-btn hover:text-red-600">Thống Kê</button>
             </div>
 
             <div class="flex-1 flex flex-col min-h-0 bg-white">
@@ -145,7 +161,40 @@
                     </div>
                 </div>
 
+                <div id="history-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wide">Lịch sử máy chủ</h3>
+                        <button onclick="loadHistoryFromDB()" class="text-[11px] bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:border-slate-400 font-bold shadow-sm uppercase">🔄 Tải lại dữ liệu</button>
+                    </div>
+                    <div id="historyList" class="space-y-4"></div>
+                </div>
 
+                <div id="order-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wide">Quản lý Đơn hàng</h3>
+                        <button onclick="loadOrderHistory()" class="text-[11px] bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:border-slate-400 font-bold shadow-sm uppercase">🔄 Tải lại</button>
+                    </div>
+                    <div class="mb-6"><h4 class="text-[11px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Chờ Xử Lý / Duyệt</h4><div id="col-pending" class="space-y-3"></div></div>
+                    <div class="mb-6"><h4 class="text-[11px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Đã Xuất Kho / Đang giao</h4><div id="col-exported" class="space-y-3"></div></div>
+                    <div class="mb-6"><h4 class="text-[11px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Hoàn Tất</h4><div id="col-completed" class="space-y-3"></div></div>
+                </div>
+
+                <div id="dashboard-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wide">Thống kê tháng này</h3>
+                        <button onclick="loadDashboard()" class="text-[11px] bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:border-slate-400 font-bold shadow-sm uppercase">🔄 Cập nhật</button>
+                    </div>
+                    <div class="grid gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-500">
+                            <div class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Doanh số Thực Tế</div>
+                            <div class="text-2xl font-black text-slate-800 mt-1" id="db-total-revenue">0 ₫</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
+                            <div class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Tổng số Đơn hàng</div>
+                            <div class="text-2xl font-black text-slate-800 mt-1" id="db-total-orders">0</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="shrink-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-20">
@@ -173,4 +222,3 @@
     <script src="assets/app.js?v=1.0"></script>
 </body>
 </html>
-
