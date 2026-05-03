@@ -1,5 +1,5 @@
 /* =========================================
-   UI/UX: TANDA NOTIFICATION SYSTEM (JS)
+   UI/UX: KB NOTIFICATION SYSTEM (JS)
 ========================================= */
 const KB_Notify = {
     init: function() {
@@ -158,13 +158,13 @@ function safeVal(id, fallback = '') {
 }
 
 const staffProfiles = {
-    'admin': { fullName: 'Lê Tuấn Hải', email: 'admin@tanda.vn', phone: '0933 129 155', role: 'Quản lý Hệ thống' },
-    'tuanhai': { fullName: 'Lê Tuấn Hải', email: 'tuanhai@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'myhoa': { fullName: 'Huỳnh Mỹ Hoa', email: 'myhoa@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'hoangduc': { fullName: 'Nguyễn Hoàng Đức', email: 'hoangduc@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'anhtu': { fullName: 'Phạm Đức Anh Tú', email: 'anhtu@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'huukhuong': { fullName: 'Nguyễn Hữu Khương', email: 'huukhuong@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'thanhchau': { fullName: 'Nguyễn Thành Châu', email: 'thanhchau@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' }
+    'admin': { fullName: 'Lê Tuấn Hải', email: 'admin@kbtech.vn', phone: '0933 129 155', role: 'Quản lý Hệ thống' },
+    'tuanhai': { fullName: 'Lê Tuấn Hải', email: 'tuanhai@kbtech.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
+    'myhoa': { fullName: 'Huỳnh Mỹ Hoa', email: 'myhoa@kbtech.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
+    'hoangduc': { fullName: 'Nguyễn Hoàng Đức', email: 'hoangduc@kbtech.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
+    'anhtu': { fullName: 'Phạm Đức Anh Tú', email: 'anhtu@kbtech.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
+    'huukhuong': { fullName: 'Nguyễn Hữu Khương', email: 'huukhuong@kbtech.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
+    'thanhchau': { fullName: 'Nguyễn Thành Châu', email: 'thanhchau@kbtech.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' }
 };
 
 // ================= 2. BIẾN TOÀN CỤC =================
@@ -839,7 +839,7 @@ function updateDoc() {
         if (!assignedUser) assignedUser = window.currentUser || 'admin';
         
         let profile = staffProfiles[assignedUser] || {
-            fullName: assignedUser.toUpperCase(), email: `${assignedUser}@tanda.vn`, phone: '0933 129 155', role: 'Phụ trách Kinh doanh'
+            fullName: assignedUser.toUpperCase(), email: `${assignedUser}@kbtech.vn`, phone: '0933 129 155', role: 'Phụ trách Kinh doanh'
         };
 
         if (assignedUser === window.currentUser && localStorage.getItem('kb_full_name')) {
