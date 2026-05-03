@@ -177,7 +177,6 @@ window.buyerDirectory = {};
 // ================= 3. KHỞI TẠO =================
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
-    loadInventory();
 });
 
 // ================= 4. LOGIN & AUTH =================
@@ -251,8 +250,8 @@ async function showApp() {
 }
 
 function switchTab(tabId) {
-    const allTabs = ['form-tab', 'history-tab', 'order-tab', 'dashboard-tab'];
-    const allBtns = ['btn-form-tab', 'btn-history-tab', 'btn-order-tab', 'btn-dashboard-tab'];
+    const allTabs = ['form-tab', 'history-tab'];
+    const allBtns = ['btn-form-tab', 'btn-history-tab'];
 
     allTabs.forEach(id => {
         let el = document.getElementById(id);
@@ -272,37 +271,6 @@ function switchTab(tabId) {
 }
 
 // ================= 5. KHO HÀNG & CRM =================
-async function loadInventory() {
-    try {
-        const res = await fetch('proxy.php'); 
-        if (!res.ok) return;
-        const data = await res.json();
-        inventoryList = data.data || data || []; 
-        let datalist = document.getElementById('inventory-datalist');
-        if (!datalist) {
-            datalist = document.createElement('datalist');
-            datalist.id = 'inventory-datalist';
-            document.body.appendChild(datalist);
-        }
-        datalist.innerHTML = inventoryList.map(item => `<option value="${(item.productName || '').replace(/"/g, '&quot;')}"></option>`).join('');
-    } catch (e) {}
-}
-
-function getInventorySearchHTML(index) {
-    return `<div class="mb-3 relative group"><input type="text" list="inventory-datalist" class="input-premium border-dashed border-red-300 bg-red-50 text-red-700 font-bold" placeholder="Gõ tìm sản phẩm từ kho..." onchange="applyFromSearch(this, ${index})" onclick="this.value=''"></div>`;
-}
-
-function applyFromSearch(inputEl, index) {
-    const searchTerm = inputEl.value.trim().toLowerCase();
-    if (!searchTerm) return;
-    let item = inventoryList.find(p => (p.productName||'').toLowerCase() === searchTerm) || inventoryList.find(p => (p.productName||'').toLowerCase().includes(searchTerm));
-    if (item) {
-        products[index].name = item.productName;
-        products[index].unit = formatUnit(item.unit || 'Cái');
-        products[index].price = parseInt(item.salePrice || 0) || 0;
-        renderProductInputs();
-    }
-}
 
 async function loadCustomersCRM() {
     try {
@@ -440,17 +408,6 @@ async function loadHistoryFromDB() {
 
             let displayName = staffProfiles[item.created_by] ? staffProfiles[item.created_by].fullName : item.created_by;
             let staffBadge = item.created_by ? `<span class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 shadow-sm ml-2">👤 ${displayName}</span>` : '';
-            let safeBuyerName = (item.buyer_name || '').replace(/'/g, "\\'");
-
-            let actionButton = '';
-            
-            let isConverted = (item.is_converted == 1 || item.is_converted === '1' || item.is_converted === true || String(item.is_converted).toLowerCase() === 'true');
-
-            if (isConverted) {
-                actionButton = `<button disabled class="bg-slate-200 border border-slate-300 text-slate-500 text-[10px] font-bold px-3 py-1.5 rounded shadow-sm cursor-not-allowed uppercase">✓ Đã Lên Đơn</button>`;
-            } else {
-                actionButton = `<button onclick="convertQuoteToOrder(${item.id}, '${safeBuyerName}')" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm uppercase">CHỐT ĐƠN HÀNG</button>`;
-            }
 
             container.insertAdjacentHTML('beforeend', `
                 <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow transition-shadow">
@@ -499,225 +456,6 @@ async function fillHistoryToForm(dbId) {
     switchTab('form-tab');
 }
 
-// ================= 7. KANBAN KÉO THẢ VÀ QUẢN LÝ CÔNG NỢ =================
-function setupKanbanDragDrop() {
-    ['pending', 'exported', 'completed'].forEach(status => {
-        let col = document.getElementById('col-' + status);
-        if(!col) return;
-        
-        col.ondragover = (e) => { 
-            e.preventDefault(); 
-            col.classList.add('ring-2', 'ring-red-400', 'bg-red-50/50', 'rounded-xl'); 
-        };
-        col.ondragleave = (e) => { 
-            col.classList.remove('ring-2', 'ring-red-400', 'bg-red-50/50', 'rounded-xl'); 
-        };
-        col.ondrop = (e) => {
-            e.preventDefault();
-            col.classList.remove('ring-2', 'ring-red-400', 'bg-red-50/50', 'rounded-xl');
-            let orderId = e.dataTransfer.getData("orderId");
-            let oldStatus = e.dataTransfer.getData("oldStatus");
-            if (orderId && oldStatus !== status) { 
-                updateOrderStatus(orderId, status); 
-            }
-        };
-    });
-}
-
-async function loadOrderHistory() {
-    try {
-        let res = await fetch('api.php?action=get_orders');
-        let data = await res.json();
-        if (data.status !== 'success') return;
-
-        const userRole = localStorage.getItem('kb_role') || '';
-        const isAdmin = (userRole.toLowerCase().includes('quản lý') || userRole === 'admin' || window.currentUser === 'admin' || window.currentUser === 'tuanhai');
-
-        let pending = '', exported = '', completed = '';
-
-        data.data.forEach(item => {
-            let paid = parseFloat(item.paid_amount) || 0;
-            let total = parseFloat(item.total_amount) || 0;
-            let remain = total - paid;
-
-            let payBadge = item.payment_status === 'paid' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Đã Thu Đủ</span>'
-                         : (item.payment_status === 'partial' ? '<span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Thu 1 Phần</span>'
-                         : '<span class="text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-100">Chưa Thu Tiền</span>');
-
-            let btnPay = '';
-            let debtInfo = '';
-            let safeProjectName = (item.project_name || 'Hợp đồng / Đơn hàng').replace(/'/g, "\\'");
-            
-            if (remain > 0) {
-                debtInfo = `<div class="text-[10px] text-slate-500 mt-1">Đã thu: <span class="text-emerald-600 font-bold">${formatMoney(paid)}</span> | Còn nợ: <span class="text-red-500 font-bold">${formatMoney(remain)}</span></div>`;
-                
-                if (item.status === 'pending') {
-                    btnPay = `<button disabled class="flex-1 bg-slate-50 text-slate-400 text-[10px] py-2 rounded-lg font-bold border border-slate-200 border-dashed cursor-not-allowed z-10">⏳ Chờ duyệt xuất kho</button>`;
-                } else if (isAdmin) {
-                    btnPay = `<button onclick="promptPayment(${item.id}, ${remain}, '${safeProjectName}')" class="flex-1 bg-emerald-500 text-white text-[10px] py-2 rounded-lg font-bold hover:bg-emerald-600 shadow-sm transition cursor-pointer z-10">💰 Nộp Tiền</button>`;
-                } else {
-                    btnPay = `<button disabled class="flex-1 bg-slate-100 text-slate-400 text-[10px] py-2 rounded-lg font-bold cursor-not-allowed z-10 border border-slate-200">Chỉ Admin</button>`;
-                }
-            } else {
-                debtInfo = `<div class="text-[10px] text-emerald-600 mt-1 font-bold">✓ Đã thanh toán 100%</div>`;
-            }
-
-            let card = `
-                <div draggable="true" ondragstart="event.dataTransfer.setData('orderId', '${item.id}'); event.dataTransfer.setData('oldStatus', '${item.status}');" 
-                     class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing relative mb-3">
-                    
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="font-black text-slate-800 text-[11px] bg-slate-100 px-2 py-1 rounded border">${item.order_no}</span>
-                        <div class="text-[9px] font-bold">${payBadge}</div>
-                    </div>
-                    
-                    <div class="text-[13px] font-bold text-slate-700 leading-snug mb-1">${item.customer_name || 'Khách lẻ'}</div>
-                    <div class="text-[11px] font-bold text-red-600">Trị giá: ${formatMoney(total)} ₫</div>
-                    ${debtInfo}
-                    
-                    ${btnPay ? `<div class="mt-3 pt-3 border-t border-slate-100 flex gap-2 relative z-10" onmousedown="event.stopPropagation();">${btnPay}</div>` : ''}
-                </div>`;
-
-            if (item.status === 'completed') completed += card;
-            else if (item.status === 'exported') exported += card;
-            else pending += card; 
-        });
-
-        if(document.getElementById('col-pending')) document.getElementById('col-pending').innerHTML = pending || '<div class="text-[11px] text-slate-400 text-center py-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">Kéo thả vào đây</div>';
-        if(document.getElementById('col-exported')) document.getElementById('col-exported').innerHTML = exported || '<div class="text-[11px] text-slate-400 text-center py-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">Kéo thả vào đây</div>';
-        if(document.getElementById('col-completed')) document.getElementById('col-completed').innerHTML = completed || '<div class="text-[11px] text-slate-400 text-center py-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">Kéo thả vào đây</div>';
-
-        setupKanbanDragDrop();
-
-    } catch (e) {}
-}
-
-async function convertQuoteToOrder(quoteId, companyName = '') {
-    let isOk = await KB_Notify.confirm('Xác nhận chốt Báo giá này thành <b>Đơn Hàng chính thức</b>?', 'Chốt Đơn');
-    if(!isOk) return;
-
-    let finalTarget = '';
-
-    if (companyName.toLowerCase().includes('khách hàng lẻ')) {
-        finalTarget = 'Khách hàng lẻ';
-    } else if (companyName !== '') {
-        KB_Notify.toast("Đang đồng bộ dữ liệu với báo cáo...", "success");
-        try {
-            let checkRes = await fetch('api.php?action=check_report_target', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'check_report_target', company_name: companyName })
-            });
-            let checkData = await checkRes.json();
-
-            if (checkData.status === 'exact_match') {
-                finalTarget = checkData.target;
-            } else if (checkData.status === 'suggest_match') {
-                let optionsHTML = checkData.all_targets.map(t => `<option value="${t}">`).join('');
-                let promptMsg = `Đối tác này chưa được lập Báo cáo bao giờ.<br>Hệ thống gợi ý Tên định danh là: <b>${checkData.suggested}</b>.<br><br>Nếu sai, hãy gõ sửa lại hoặc chọn từ danh sách:`;
-                
-                let userTarget = await KB_Notify.prompt(promptMsg, "Xác nhận Tên Báo Cáo", checkData.suggested, optionsHTML);
-                if (userTarget === null) return; 
-                finalTarget = userTarget;
-            }
-        } catch (e) {}
-    }
-
-    try {
-        let agentDisplay = localStorage.getItem('kb_full_name') || staffProfiles[window.currentUser]?.fullName || window.currentUser;
-        let res = await fetch('api.php?action=create_order_from_quote', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ action: 'create_order_from_quote', quote_id: quoteId, report_target: finalTarget, agent_name: agentDisplay }) 
-        });
-        
-        let rawText = await res.text();
-        let data;
-        try {
-            data = JSON.parse(rawText);
-        } catch(err) {
-            console.error("RAW LỖI:", rawText);
-            KB_Notify.alert(`<b>SERVER BÁO LỖI:</b><br><div class="mt-2 text-xs text-red-600 bg-red-50 p-3 border border-red-200 rounded max-h-40 overflow-auto font-mono text-left">${rawText}</div>`, "Lỗi Xử Lý Chốt Đơn");
-            return;
-        }
-
-        if(data.status === 'success') { 
-            KB_Notify.toast(data.message, "success");
-            loadHistoryFromDB();
-            switchTab('order-tab'); loadOrderHistory(); loadDashboard();
-        } else {
-            KB_Notify.alert(data.message, "Lỗi tạo đơn");
-        }
-    } catch(e) { KB_Notify.alert("Mất kết nối API", "Lỗi Mạng"); }
-}
-
-async function updateOrderStatus(orderId, newStatus) {
-    let note = '';
-    if(newStatus === 'exported') {
-        let rs = await KB_Notify.prompt("Ghi chú tiến độ (Số xe, SĐT tài xế, Người giao...):", "Đang triển khai / Giao hàng");
-        if(rs === null) return;
-        note = rs;
-    } else {
-        let isOk = await KB_Notify.confirm('Xác nhận cập nhật trạng thái đơn hàng này?', 'Cập nhật tiến độ');
-        if(!isOk) return;
-    }
-
-    try {
-        let res = await fetch('api.php?action=update_order_status', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ action: 'update_order_status', order_id: orderId, status: newStatus, note: note }) 
-        });
-        let data = await res.json();
-        KB_Notify.toast(data.message);
-        loadOrderHistory();
-    } catch(e) {}
-}
-
-async function promptPayment(orderId, remainAmount, projectName) {
-    let result = await KB_Notify.paymentPrompt('Xác nhận Thu tiền & Hoa hồng', remainAmount, projectName);
-    if(result === null) return; 
-    
-    let actualPaid = parseFloat(result.amount);
-    let commission = parseFloat(result.commission) || 0;
-    
-    if(isNaN(actualPaid) || actualPaid <= 0) {
-        return KB_Notify.alert("Số tiền thu không hợp lệ hoặc để trống!", "Lỗi");
-    }
-
-    try {
-        let res = await fetch('api.php?action=record_payment', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ 
-                action: 'record_payment', 
-                order_id: orderId, 
-                amount: actualPaid,
-                commission: commission,
-                project_name: projectName
-            }) 
-        });
-        let data = await res.json();
-        if(data.status === 'success') {
-            KB_Notify.toast("Đã thu tiền & Ghi nhận hoa hồng (nếu có) thành công!");
-            loadOrderHistory(); loadDashboard(); 
-        } else {
-            KB_Notify.alert(data.message, "Lỗi từ Database"); 
-        }
-    } catch(e) { KB_Notify.alert("Lỗi kết nối máy chủ!", "Lỗi mạng"); }
-}
-
-async function loadDashboard() {
-    try {
-        let res = await fetch('api.php?action=get_stats');
-        let result = await res.json();
-        if(result.status === 'success') {
-            if(document.getElementById('db-total-orders')) document.getElementById('db-total-orders').innerText = result.data.total_orders || 0;
-            if(document.getElementById('db-total-revenue')) document.getElementById('db-total-revenue').innerText = formatMoney(result.data.total_revenue || 0) + ' ₫';
-            if(document.getElementById('db-total-debt')) document.getElementById('db-total-debt').innerText = formatMoney(result.data.total_debt || 0) + ' ₫';
-        }
-    } catch(e) {}
-}
 
 function createNewDocument(isInit = false) {
     if(!isInit) {
@@ -804,7 +542,6 @@ function renderProductInputs() {
         container.insertAdjacentHTML('beforeend', `
             <div class="bg-white border border-slate-200 p-5 rounded-2xl relative group mb-4">
                 <button onclick="removeProductRow(${index})" class="absolute -top-3 -right-3 bg-white border border-slate-200 text-red-500 rounded-full w-8 h-8 font-bold hover:bg-red-500 hover:text-white transition-all z-10 shadow-sm">✕</button>
-                ${getInventorySearchHTML(index)}
                 <div class="mb-4"><label class="label-premium">Tên & Mô tả</label><textarea rows="3" oninput="updateProductName(${index}, this.value)" class="input-premium font-medium">${prod.name || ''}</textarea></div>
                 <div class="grid grid-cols-12 gap-2">
                     <div class="col-span-3"><label class="label-premium">Bảo hành</label>${createSelectHTML(bhOptions, prod.bh || '12 tháng', index, 'bh')}</div>
