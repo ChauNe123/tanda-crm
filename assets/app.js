@@ -1,5 +1,5 @@
 /* =========================================
-   UI/UX: KB NOTIFICATION SYSTEM (JS)
+   UI/UX: KB NOTIFICATION SYSTEM (JS) -> Đã update cho TANDA
 ========================================= */
 const KB_Notify = {
     init: function() {
@@ -447,7 +447,6 @@ async function fillHistoryToForm(dbId) {
     renderProductInputs();
     switchTab('form-tab');
 }
-
 
 function createNewDocument(isInit = false) {
     if(!isInit) {
