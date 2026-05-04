@@ -16,7 +16,6 @@ function generateAcceptanceHTML(docData, products) {
 
     return `
         <div id="acceptance-section" class="doc-wrapper" style="position: relative;">
-            <div class="watermark"></div>
             <div class="content-wrapper" contenteditable="true" style="outline: none;">
                 <div style="text-align: center; margin-bottom: 20px;"><h3 style="margin: 0; font-weight: bold; font-size: 14pt;">CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3><p style="margin: 0; font-weight: bold; text-decoration: underline;">Độc lập - Tự do - Hạnh phúc</p><p style="margin: 5px 0 15px 0;">----------o0o-----------</p><h2 style="margin: 0; font-weight: bold; font-size: 16pt;">BIÊN BẢN BÀN GIAO & NGHIỆM THU</h2><p style="margin: 0; font-style: italic;">Căn cứ Hợp đồng số: ${docData.cNo}</p></div>
                 <p style="margin-top: 15px;">Hôm nay, ${docData.dateString}, tại địa điểm: ${docData.deliveryAddress}. Chúng tôi gồm có:</p>

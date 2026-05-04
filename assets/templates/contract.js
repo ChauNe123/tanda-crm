@@ -25,7 +25,6 @@ function generateContractHTML(docData, products, formatMoney) {
 
     return `
         <div id="contract-section" class="doc-wrapper" style="position: relative;">
-            <div class="watermark"></div>
             <div class="content-wrapper" contenteditable="true" style="outline: none;">
                 <div style="text-align: center; margin-bottom: 20px;"><h3 style="margin: 0; font-weight: bold; font-size: 14pt;">CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3><p style="margin: 0; font-weight: bold; text-decoration: underline;">Độc lập - Tự do - Hạnh phúc</p><p style="margin: 5px 0 15px 0;">----------o0o-----------</p><h2 style="margin: 0; font-weight: bold; font-size: 16pt;">HỢP ĐỒNG MUA BÁN VÀ DỊCH VỤ</h2><p style="margin: 0; font-style: italic;">Số: ${docData.cNo}</p></div>
                 <div><p><b>Căn cứ vào:</b></p><p>- Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015 và các văn bản pháp luật liên quan;</p><p>- Luật Thương mại số 36/2005/QH11 ngày 14/06/2005 và các văn bản pháp luật liên quan;</p><p>- Nhu cầu và khả năng của các Bên;</p></div>

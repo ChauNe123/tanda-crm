@@ -1,8 +1,7 @@
 <?php
 // ==========================================
 // api.php - ENTERPRISE CRM V2 (CORE BACKEND)
-// Tích hợp: AI Target, Kanban, Quản lý Công nợ kép & Hoa hồng tự động
-// Phiên bản: Tối ưu hoá 100%
+// ĐÃ BYPASS LOGIN - Mặc định tài khoản: Admin
 // ==========================================
 $session_dir = __DIR__ . '/_sessions';
 if (!is_dir($session_dir)) { mkdir($session_dir, 0777, true); }
@@ -21,12 +20,14 @@ $input = json_decode(file_get_contents('php://input'), true) ?? [];
 // Ưu tiên GET action từ URL để chống lỗi "Invalid Action"
 $action = $_GET['action'] ?? $input['action'] ?? '';
 
-if (!isset($_SESSION['user']) && $action !== 'fetch_inventory') {
-    http_response_code(401); echo json_encode(["status" => "error", "message" => "Hết phiên làm việc."]); exit;
-}
+// --- ĐÃ TẮT ĐOẠN NÀY ĐỂ BỎ LOGIN ---
+// if (!isset($_SESSION['user']) && $action !== 'fetch_inventory') {
+//     http_response_code(401); echo json_encode(["status" => "error", "message" => "Hết phiên làm việc."]); exit;
+// }
 
-$user = $_SESSION['user'] ?? 'admin';
-$sso_role = $_SESSION['sso_role'] ?? 'user'; 
+// BẮT BUỘC ĐỊNH DANH ĐỂ SQL KHÔNG BỊ LỖI
+$user = 'admin';
+$sso_role = 'admin'; 
 
 switch ($action) {
 
@@ -70,7 +71,8 @@ switch ($action) {
             
             $docType        = $input['doc_type'] ?? 'commercial';
             $totalAmount    = floatval($input['total_amount'] ?? 0);
-            $createdBy      = !empty($input['staff_username']) ? $input['staff_username'] : (!empty($input['created_by']) ? $input['created_by'] : $user);
+            // Cố định người tạo để không lỗi DB
+            $createdBy      = 'admin';
 
             if (empty($quoteNo)) { echo json_encode(["status" => "error", "message" => "Thiếu mã báo giá!"]); exit; }
 
