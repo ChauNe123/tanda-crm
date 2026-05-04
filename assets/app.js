@@ -145,7 +145,7 @@ const KB_Notify = {
     }
 };
 
-function formatMoney(num) { return new Intl.NumberFormat('vi-VN').format(num); }
+function formatMoney(num) { return new Intl.NumberFormat('vi-VN').format(Math.round(num)); }
 function formatUnit(unitStr) {
     if (!unitStr) return 'Cái';
     unitStr = unitStr.trim();
@@ -157,13 +157,7 @@ function safeVal(id, fallback = '') {
 }
 
 const staffProfiles = {
-    'admin': { fullName: 'Lê Tuấn Hải', email: 'admin@tanda.vn', phone: '0933 129 155', role: 'Quản lý Hệ thống' },
-    'tuanhai': { fullName: 'Lê Tuấn Hải', email: 'tuanhai@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'myhoa': { fullName: 'Huỳnh Mỹ Hoa', email: 'myhoa@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'hoangduc': { fullName: 'Nguyễn Hoàng Đức', email: 'hoangduc@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'anhtu': { fullName: 'Phạm Đức Anh Tú', email: 'anhtu@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'huukhuong': { fullName: 'Nguyễn Hữu Khương', email: 'huukhuong@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' },
-    'thanhchau': { fullName: 'Nguyễn Thành Châu', email: 'thanhchau@tanda.vn', phone: '0933 129 155', role: 'Phụ trách Kinh doanh' }
+    'admin': { fullName: 'ADMIN TANDA', email: 'admin@tanda.vn', phone: '0933 129 155', role: 'Giám Đốc' },
 };
 
 let products = [];
@@ -380,18 +374,24 @@ async function saveQuoteToDB() {
 }
 
 async function loadHistoryFromDB() {
+    const container = document.getElementById('historyList');
+    if(!container) return;
+
     try {
         let res = await fetch('api.php?action=get_history');
         let data = await res.json();
-        if(data.status !== 'success') return;
+        
+        // Luôn làm sạch vùng chứa trước khi đổ data mới
+        container.innerHTML = '';
+
+        // Kiểm tra an toàn: Nếu API lỗi, hoặc data.data không phải là một mảng, hoặc mảng rỗng
+        if(data.status !== 'success' || !data.data || !Array.isArray(data.data) || data.data.length === 0) {
+            historyDataNAS = [];
+            container.innerHTML = '<div class="text-center p-8 bg-white rounded-2xl"><p class="text-slate-400">Chưa có dữ liệu.</p></div>';
+            return;
+        }
         
         historyDataNAS = data.data; 
-        const container = document.getElementById('historyList');
-        if(!container) return;
-        container.innerHTML = '';
-        if(data.data.length === 0) {
-            return container.innerHTML = '<div class="text-center p-8 bg-white rounded-2xl"><p class="text-slate-400">Chưa có dữ liệu.</p></div>';
-        }
         
         data.data.forEach(item => {
             let prods = []; try { prods = JSON.parse(item.products_json); } catch(e){}
@@ -401,12 +401,14 @@ async function loadHistoryFromDB() {
 
             let displayName = staffProfiles[item.created_by] ? staffProfiles[item.created_by].fullName : item.created_by;
             let staffBadge = item.created_by ? `<span class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 shadow-sm ml-2">👤 ${displayName}</span>` : '';
-
+            // Thêm đoạn này để format ngày
+            let dateParts = (item.doc_date || '').split('-');
+            let displayDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : item.doc_date;
             container.insertAdjacentHTML('beforeend', `
                 <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:shadow transition-shadow">
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded text-xs cursor-pointer" onclick="fillHistoryToForm(${item.id})">📦 ${item.quote_no}</span>
-                        <span class="text-xs text-slate-400">${item.doc_date}</span>
+                        <span class="text-xs text-slate-400">${displayDate}</span>
                     </div>
                     <div class="text-sm font-bold text-slate-800 cursor-pointer hover:text-orange-600 flex items-center" onclick="fillHistoryToForm(${item.id})">
                         ${item.buyer_name || 'Khách lẻ'} ${staffBadge}
@@ -417,7 +419,11 @@ async function loadHistoryFromDB() {
                     </div>
                 </div>`);
         });
-    } catch(e) { console.error("Lỗi hiển thị lịch sử:", e); }
+    } catch(e) { 
+        console.error("Lỗi hiển thị lịch sử:", e); 
+        // Bắt lỗi triệt để: Nếu code crash giữa chừng, sẽ hiển thị thông báo thay vì trống trơn
+        container.innerHTML = '<div class="text-center p-8 bg-white rounded-2xl"><p class="text-red-500 font-bold">Đã xảy ra lỗi khi tải lịch sử. Vui lòng tải lại trang (Ctrl + F5)!</p></div>';
+    }
 }
 
 async function fillHistoryToForm(dbId) {
@@ -563,30 +569,25 @@ function updateDoc() {
         const docPreview = document.getElementById('documentPreview');
         if (!docPreview) return;
         
-        let assignedUser = safeVal('assignedStaff');
-        if (!assignedUser) assignedUser = window.currentUser || 'admin';
-        
-        let profile = staffProfiles[assignedUser] || {
-            fullName: assignedUser.toUpperCase(), email: `${assignedUser}@tanda.vn`, phone: '0933 129 155', role: 'Phụ trách Kinh doanh'
-        };
-
-        if (assignedUser === window.currentUser && localStorage.getItem('kb_full_name')) {
-            profile.fullName = localStorage.getItem('kb_full_name');
-            profile.email = localStorage.getItem('kb_email') || profile.email;
-            profile.phone = localStorage.getItem('kb_phone') || profile.phone;
-            profile.role = localStorage.getItem('kb_role') || profile.role;
-        }
-
         const cDate = safeVal('docDate') ? new Date(safeVal('docDate')) : new Date();
+        
+        // ÉP CỨNG TẤT CẢ LÀ ADMIN TANDA - GIÁM ĐỐC TẠI ĐÂY
         const docData = {
-            safeFullName: profile.fullName, safePhone: profile.phone, safeEmail: profile.email, safeRole: profile.role,
+            safeFullName: 'ADMIN TANDA', 
+            safePhone: '0933 129 155', 
+            safeEmail: 'admin@tanda.vn', 
+            safeRole: 'Giám Đốc',
             dateString: `ngày ${String(cDate.getDate()).padStart(2, '0')} tháng ${String(cDate.getMonth() + 1).padStart(2, '0')} năm ${cDate.getFullYear()}`,
             pdfDateStr: `${String(cDate.getDate()).padStart(2, '0')}/${String(cDate.getMonth() + 1).padStart(2, '0')}/${cDate.getFullYear()}`,
-            qNo: safeVal('quoteNo', ".................."), cNo: safeVal('contractNo', ".................."), pName: safeVal('projectName', ".................."),
+            qNo: safeVal('quoteNo', ".................."), 
+            cNo: safeVal('contractNo', ".................."), 
+            pName: safeVal('projectName', ".................."),
             bName: safeVal('buyerName', "......................................................."), 
             bAddress: safeVal('buyerAddress', "......................................................................................."),
-            bTax: safeVal('buyerTax', "........................."), bPhone: safeVal('buyerPhone', ""), 
-            bRep: safeVal('buyerRep', ".............................."), bRole: safeVal('buyerRole', ".............................."),
+            bTax: safeVal('buyerTax', "........................."), 
+            bPhone: safeVal('buyerPhone', ""), 
+            bRep: safeVal('buyerRep', ".............................."), 
+            bRole: safeVal('buyerRole', ".............................."),
             payOpt: safeVal('paymentOpt', "50"), 
             deliveryAddress: safeVal('deliveryAddress').trim() !== "" ? safeVal('deliveryAddress').trim() : safeVal('buyerAddress', "......................................................................................."),
             isVat: document.getElementById('includeVat') ? document.getElementById('includeVat').checked : true
@@ -599,23 +600,15 @@ function updateDoc() {
         let contractHtml = typeof generateContractHTML === 'function' ? generateContractHTML(docData, products, formatMoney) : '';
         let acceptHtml = typeof generateAcceptanceHTML === 'function' ? generateAcceptanceHTML(docData, products) : '';
 
+        // Chỉ giữ lại đoạn đổi tài khoản ngân hàng nếu là khách lẻ
         const isRetail = document.getElementById('isRetailCustomer') ? document.getElementById('isRetailCustomer').checked : false;
         if (isRetail) {
             quoteHtml = quoteHtml.replace(/305258/g, "19028000272011");          
             quoteHtml = quoteHtml.replace(/Ngân hàng ACB<\/span>[\s\S]*?\(CN Ông Ích Khiêm\)<\/span>/gi, "Ngân hàng Techcombank</span>");            
-            quoteHtml = quoteHtml.replace(/(Chủ Tài Khoản:<\/span>[\s\S]*?)CÔNG TY TNHH TM DV TANDA/gi, "$1LÊ TUẤN HẢI");
+            quoteHtml = quoteHtml.replace(/(Chủ Tài Khoản:<\/span>[\s\S]*?)CÔNG TY TNHH TM DV TANDA/gi, "$1ADMIN TANDA");
         }
 
-        if (contractHtml && docData.safeFullName && docData.safeRole) {
-            contractHtml = contractHtml.replace(/Ông\/Bà:\s*/gi, "")
-                                       .replace(/Ông:\s*/gi, "")
-                                       .replace(/Bà:\s*/gi, "");
-            contractHtml = contractHtml.replace(new RegExp(docData.safeFullName, 'gi'), "LÊ TUẤN HẢI");            
-            contractHtml = contractHtml.replace(new RegExp(docData.safeRole, 'gi'), "Giám đốc");
-            contractHtml = contractHtml.replace(/Ông\s+LÊ TUẤN HẢI/gi, "LÊ TUẤN HẢI")
-                                       .replace(/Bà\s+LÊ TUẤN HẢI/gi, "LÊ TUẤN HẢI")
-                                       .replace(/Ông\/Bà\s+LÊ TUẤN HẢI/gi, "LÊ TUẤN HẢI");
-        }
+        // Vứt bỏ toàn bộ các đoạn contractHtml.replace("LÊ TUẤN HẢI"...) cũ rác rưởi ở đây
 
         docPreview.innerHTML = `
             ${quoteHtml}
@@ -624,5 +617,7 @@ function updateDoc() {
             <div class="print-divider page-break w-full border-t-2 border-dashed border-slate-300 my-10 py-5 text-center text-slate-400 text-xs font-semibold tracking-widest no-print">CUT HERE / NEXT PAGE</div>
             ${acceptHtml}
         `;
-    } catch (err) {}
+    } catch (err) {
+        console.error(err);
+    }
 }

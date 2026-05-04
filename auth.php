@@ -23,10 +23,10 @@ if ($action === 'check') {
         "status" => "logged_in", 
         "user" => "admin",
         "full_name" => "Admin TANDA",
-        "email" => "",
-        "phone" => "",
-        "role" => "admin",
-        "position" => "Quản trị viên"
+        "email" => "admin@tanda.vn",
+        "phone" => "0933 129 155",
+        "role" => "Giám Đốc",
+        "position" => "Giám Đốc"
     ]);
 }
 

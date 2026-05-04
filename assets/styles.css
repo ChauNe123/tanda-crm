@@ -61,25 +61,6 @@
 .doc-wrapper th { text-align: center; font-weight: bold; background-color: #f2f2f2; color: #000; }
 .money-cell { text-align: right; white-space: nowrap; }
 
-/* ========================================================
-   BỔ SUNG WATERMARK LOGO & EDITABLE CONTENT
-   ======================================================== */
-.watermark {
-    position: absolute !important;
-    top: 50% !important; 
-    left: 50% !important;
-    transform: translate(-50%, -50%) rotate(-30deg) !important;
-    width: 65% !important; 
-    height: 65% !important;
-    background-image: url('../logo.png') !important; 
-    background-size: contain !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    opacity: 0.08 !important; /* Làm mờ 8% để chìm dưới chữ */
-    z-index: 0 !important;
-    pointer-events: none !important; /* Quan trọng: Xuyên qua logo để có thể click chuột gõ chữ */
-}
-
 .content-wrapper { position: relative; z-index: 10; }
 
 /* Hiệu ứng khi Sếp click vào edit văn bản */

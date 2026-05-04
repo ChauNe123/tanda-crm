@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>KB | MOBILE</title>
+    <title>TANDA | MOBILE</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,7 +49,7 @@
         
         <div class="bg-slate-900 p-4 flex items-center justify-between sticky top-0 z-40 shadow-md mobile-ui-only">
             <div>
-                <div class="text-white font-extrabold text-lg tracking-tight">KB<span class="text-red-500">TECH</span></div>
+                <div class="text-white font-extrabold text-lg tracking-tight">TAN<span class="text-orange-500">DA</span></div>
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-[11px] text-emerald-400 font-semibold" id="currentUserDisplay">Online</span>

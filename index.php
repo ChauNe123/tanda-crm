@@ -9,7 +9,7 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <title>TANDA | QUOTE SYSTEM</title>
-    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="icon" type="image/png" href="">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
         
         <div class="w-[520px] bg-white shadow-[8px_0_24px_rgba(15,23,42,0.04)] no-print flex flex-col shrink-0 border-r border-slate-200 z-10 h-full relative">
             <div class="bg-slate-900 p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
-                <a href="https://app.tanda.vn" target="_self" class="flex items-center gap-3 group cursor-pointer hover:opacity-90 transition-opacity">
+                <a href="https://app.kbtech.vn/tanda-dashboard" target="_self" class="flex items-center gap-3 group cursor-pointer hover:opacity-90 transition-opacity">
                     <!-- Logo chữ TANDA thay vì hình ảnh -->
                     <div class="text-white font-extrabold text-2xl tracking-tight group-hover:scale-105 transition-transform duration-300">TAN<span class="text-orange-500">DA</span></div>
                     
@@ -172,6 +172,6 @@
     <script src="assets/templates/quote.js"></script>
     <script src="assets/templates/contract.js"></script>
     <script src="assets/templates/acceptance.js"></script>
-    <script src="assets/app.js?v=1.0"></script>
+    <script src="assets/app.js?v=<?php echo filemtime('assets/app.js'); ?>"></script>
 </body>
 </html>
